@@ -1,9 +1,11 @@
 #!/bin/bash
 set -e
 
-MONGO_VERSION='7.0.16'
+ARCH="${ARCH:-x86_64}"
+PLATFORM="${PLATFORM:-linux/amd64}"
+MONGO_VERSION="${MONGO_VERSION:-8.0.23}"
 SRC="r$MONGO_VERSION"
-TARGET="mongodb-linux-x86_64-${MONGO_VERSION}"
+TARGET="mongodb-linux-${ARCH}-${MONGO_VERSION}"
 BIN="$TARGET/bin"
 mongoSrcUrl="https://github.com/mongodb/mongo/archive/refs/tags/$SRC.tar.gz"
 
@@ -12,8 +14,8 @@ mongoSrcFolder="mongo-$SRC"
 [ ! -d $SRC ] && tar -xzf "${SRC}.tar.gz"
 echo "{\"version\": \"${MONGO_VERSION}\"}" > $mongoSrcFolder/version.json
 
-docker run --memory=58g --rm -it -v $(pwd)/$mongoSrcFolder:/mongodb mongodb-builder -e MONGO_VERSION="${MONGO_VERSION}"
+docker run --memory=32g --platform "${PLATFORM}" --rm -it -v $(pwd)/$mongoSrcFolder:/mongodb mongodb-builder -e MONGO_VERSION="${MONGO_VERSION}"
 
 mkdir -p $BIN
-sudo mv "$mongoSrcFolder/build/install/bin/mongos" "$mongoSrcFolder/build/install/bin/mongod" $BIN
-sudo tar -czf "$TARGET.tgz" $TARGET
+mv "$mongoSrcFolder/bazel-bin/install/bin/mongos" "$mongoSrcFolder/bazel-bin/install/bin/mongod" $BIN
+tar -czf "$TARGET.tgz" $TARGET

@@ -14,8 +14,12 @@ mongoSrcFolder="mongo-$SRC"
 [ ! -d $SRC ] && tar -xzf "${SRC}.tar.gz"
 echo "{\"version\": \"${MONGO_VERSION}\"}" > $mongoSrcFolder/version.json
 
-docker run --memory=32g --platform "${PLATFORM}" --rm -it -v $(pwd)/$mongoSrcFolder:/mongodb mongodb-builder -e MONGO_VERSION="${MONGO_VERSION}"
+docker run --memory=32g --platform "${PLATFORM}" --rm -it \
+  -v $(pwd)/$mongoSrcFolder:/mongodb \
+  -v mongo-bazel-cache:/root/.cache/bazel \
+  -v mongo-poetry-cache:/root/.cache/pypoetry \
+  mongodb-builder -e MONGO_VERSION="${MONGO_VERSION}"
 
 mkdir -p $BIN
-mv "$mongoSrcFolder/bazel-bin/install/bin/mongos" "$mongoSrcFolder/bazel-bin/install/bin/mongod" $BIN
+mv "$mongoSrcFolder/output/bin/mongos" "$mongoSrcFolder/output/bin/mongod" $BIN
 tar -czf "$TARGET.tgz" $TARGET

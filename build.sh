@@ -34,9 +34,10 @@ bazel build \
   --config=opt \
   --config=local \
   --build_enterprise=False \
-  --features=external_include_paths \
   --define=MONGO_VERSION="$MONGO_VERSION"
 
-# --- Strip the resulting binaries ---
-cd bazel-bin/install/bin
+# --- Strip and copy the resulting binaries to the mounted volume ---
+cd bazel-bin/install-core/bin
 strip mongos mongod
+mkdir -p /mongodb/output/bin
+cp mongod mongos /mongodb/output/bin/

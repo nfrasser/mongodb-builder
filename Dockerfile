@@ -2,7 +2,7 @@ FROM rockylinux:8
 
 RUN dnf update -y
 RUN dnf group install -y "Development Tools"
-RUN dnf install -y openssl-devel bzip2-devel libffi-devel zlib-devel xz-devel libcurl-devel perl-IPC-Cmd
+RUN dnf install -y openssl-devel bzip2-devel libffi-devel zlib-devel xz-devel libcurl-devel perl-IPC-Cmd perl-Time-Piece
 RUN dnf install -y python3.12 python3.12-devel python3.12-pip
 
 # Build OpenSSL 3 from source. Rocky 8 ships OpenSSL 1.1, but target systems

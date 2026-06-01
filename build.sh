@@ -23,6 +23,17 @@ MONGO_VERSION=$(python3.12 -c "import json; print(json.load(open('version.json')
 # minimal stub BUILD.bazel files so Bazel analysis succeeds.
 python3.12 /generate_enterprise_stubs.py
 
+# --- Patch toolchain to allow /mongodb as a builtin include path ---
+# Bazel's header validation rejects absolute paths not listed in the toolchain's
+# cxx_builtin_include_directories. The 'includes' attribute in cc_library rules
+# (e.g. libbson) generates absolute -isystem paths under /mongodb/. This sed adds
+# the workspace root so those headers pass validation.
+#
+# Note this may change in future MongoDB versions if the toolchain is updated,
+# but should be safe for 8.0.x releases.
+sed -i '/"\/usr\/include",/a\    "/mongodb",' \
+  bazel/toolchains/cc/mongo_linux/mongo_toolchain_flags_v4.bzl
+
 # --- Build mongod + mongos (the "install-core" target) via Bazel ---
 # bazelisk reads .bazelversion and .bazeliskrc to fetch the correct
 # MongoDB-patched Bazel binary automatically.
@@ -40,4 +51,5 @@ bazel build \
 cd bazel-bin/install-core/bin
 strip mongos mongod
 mkdir -p /mongodb/output/bin
-cp mongod mongos /mongodb/output/bin/
+cp -f mongod mongos /mongodb/output/bin/
+chmod u+w /mongodb/output/bin/mongod /mongodb/output/bin/mongos
